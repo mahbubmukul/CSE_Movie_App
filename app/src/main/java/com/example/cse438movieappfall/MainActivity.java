@@ -14,6 +14,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.google.gson.Gson;
+
 import java.io.IOException;
 
 import okhttp3.OkHttpClient;
@@ -22,9 +25,7 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    String [] movieName = {"Bangladesh", "India", "Brazil", "Argentina", "Japan"};
-    int []img = {R.mipmap.img_bd, R.mipmap.img_ind, R.mipmap.img_brazil,
-            R.mipmap.img_arg, R.mipmap.img_jpn};
+    PopularMovieResponse movieResponse;
 
     OkHttpClient client = new OkHttpClient();
 
@@ -49,12 +50,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         RecyclerView rv = findViewById(R.id.movie_list_view);
-        rv.setLayoutManager(new LinearLayoutManager(this));
+        rv.setLayoutManager(new GridLayoutManager(this,2));
         rv.setAdapter(new MyAdapter());
 
         try {
             String data = run("https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&page=1&api_key=3fa9058382669f72dcb18fb405b7a831&language=en-US");
-            System.out.println("Test "+data);
+            movieResponse = new  Gson().fromJson(data, PopularMovieResponse.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -73,13 +74,19 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
-            holder.textView.setText(movieName[position]);
-            holder.flagImg.setImageResource(img[position]);
+            holder.textView.setText(movieResponse.getResults().get(position).getTitle());
+            holder.rating.setText(""+movieResponse.getResults().get(position).getVoteAverage());
+
+            Glide.with(getApplicationContext())
+                    .load("https://image.tmdb.org/t/p/w500"+movieResponse.getResults().get(position).getPosterPath())
+                    .centerCrop()
+                    .into(holder.flagImg);
+            //holder.flagImg.setImageResource(img[position]);
         }
 
         @Override
         public int getItemCount() {
-            return movieName.length;
+            return movieResponse.getResults().size();
         }
     }
 
@@ -87,10 +94,12 @@ public class MainActivity extends AppCompatActivity {
 
         TextView textView;
         ImageView flagImg;
+        TextView rating;
         public MovieViewHolder(@NonNull View itemView) {
             super(itemView);
-            textView = itemView.findViewById(R.id.textView);
-            flagImg = itemView.findViewById(R.id.flag);
+            textView = itemView.findViewById(R.id.title);
+            flagImg = itemView.findViewById(R.id.poster);
+            rating = itemView.findViewById(R.id.rating);
         }
     }
 }

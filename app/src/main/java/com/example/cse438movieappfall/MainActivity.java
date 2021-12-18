@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.LayoutInflater;
@@ -51,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
 
         RecyclerView rv = findViewById(R.id.movie_list_view);
         rv.setLayoutManager(new GridLayoutManager(this,2));
+        //if recycler is horizontal
+       // rv.setLayoutManager(new LinearLayoutManager(this,RecyclerView.HORIZONTAL,false));
+
         rv.setAdapter(new MyAdapter());
 
         try {
@@ -81,7 +85,16 @@ public class MainActivity extends AppCompatActivity {
                     .load("https://image.tmdb.org/t/p/w500"+movieResponse.getResults().get(position).getPosterPath())
                     .centerCrop()
                     .into(holder.flagImg);
-            //holder.flagImg.setImageResource(img[position]);
+
+
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent i = new Intent(MainActivity.this, DetailsACtivity.class);
+                    i.putExtra("result", movieResponse.getResults().get(position));
+                    startActivity(i);
+                }
+            });
         }
 
         @Override
